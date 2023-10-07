@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المقلوب · Al-Maqlub — Help & Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #030508;
+  --deep: #07101e;
+  --surface: #0c1828;
+  --gold: #c8922a;
+  --gold2: #e8b84b;
+  --gold3: #f5d98a;
+  --crimson: #8b2020;
+  --crimson2: #c0392b;
+  --teal: #1a9f88;
+  --text: #e8dcc8;
+  --text2: #9a8870;
+  --border: rgba(200,146,42,.18);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+/* Mosaic borders */
+.mosaic-top, .mosaic-bottom {
+  position: fixed; left:0; width:100%; height:5px; z-index:100;
+  background: repeating-linear-gradient(90deg, var(--gold) 0 20px, var(--teal) 20px 40px, var(--crimson2) 40px 60px, var(--gold2) 60px 80px);
+}
+.mosaic-top { top:0; }
+.mosaic-bottom { bottom:0; }
+
+/* Layout */
+.page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* Header */
+.header { text-align: center; padding: 30px 0 20px; }
+.bismillah {
+  font-family: 'Amiri', serif; font-size: 1.4rem;
+  color: var(--gold2); direction: rtl;
+  text-shadow: 0 0 30px rgba(200,146,42,.4);
+  animation: glow 4s ease-in-out infinite;
+}
+@keyframes glow {
+  0%,100% { text-shadow: 0 0 30px rgba(200,146,42,.4); }
+  50% { text-shadow: 0 0 50px rgba(200,146,42,.6); }
+}
+.title {
+  font-family: 'Amiri', serif; font-size: 2.6rem;
+  color: var(--gold); margin: 8px 0 4px;
+  direction: rtl;
+}
+.subtitle {
+  font-family: 'Cinzel', serif; font-size: .8rem;
+  color: var(--text2); letter-spacing: 3px; text-transform: uppercase;
+}
+.header-label {
+  display: inline-block; margin-top: 12px;
+  padding: 4px 16px; border: 1px solid var(--gold);
+  border-radius: 20px; font-size: .7rem;
+  color: var(--gold2); letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* Divider */
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  padding: 24px 0; opacity: .5;
+}
+.divider .line { flex:1; height:1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.divider .diamond { width:8px; height:8px; background: var(--gold); transform: rotate(45deg); }
+
+/* TOC */
+.toc {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; margin-bottom: 30px;
+}
+.toc-title {
+  font-family: 'Cinzel', serif; font-size: .7rem;
+  color: var(--text2); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.toc a {
+  display: block; color: var(--text2); text-decoration: none;
+  padding: 4px 0; transition: color .2s;
+}
+.toc a:hover { color: var(--gold2); }
+.toc a .num { color: var(--gold); margin-right: 8px; }
+
+/* Section headers */
+.sec-header {
+  font-family: 'Cinzel', serif; font-size: 1.1rem;
+  color: var(--gold2); padding: 30px 0 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px; letter-spacing: 1px;
+}
+.sec-header .emoji { margin-right: 8px; }
+
+/* Cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+  transition: border-color .3s;
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity:0; transition: opacity .3s;
+}
+.card:hover { border-color: rgba(200,146,42,.35); }
+.card:hover::before { opacity:1; }
+
+/* Feature cards */
+.feature-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px; margin-bottom: 20px;
+}
+.feature-card h3 {
+  font-family: 'Amiri', serif; font-size: 1.2rem;
+  color: var(--gold2); margin-bottom: 8px; direction: rtl;
+}
+.feature-card p { color: var(--text2); font-size: .85rem; }
+.feature-card ul { list-style: none; padding: 0; margin-top: 8px; }
+.feature-card ul li {
+  padding: 3px 0; color: var(--text);
+  font-size: .85rem;
+}
+.feature-card ul li::before {
+  content: '◆'; color: var(--gold); margin-right: 8px; font-size: .6rem;
+  vertical-align: middle;
+}
+
+/* FAQ */
+.faq-item { margin-bottom: 4px; }
+.faq-q {
+  background: var(--deep); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; transition: all .2s; user-select: none;
+}
+.faq-q:hover { border-color: var(--gold); }
+.faq-q .q-text { color: var(--text); font-size: .9rem; }
+.faq-q .q-text strong { color: var(--gold2); }
+.faq-q .arrow {
+  color: var(--gold); transition: transform .3s;
+  font-size: .8rem; flex-shrink: 0; margin-left: 12px;
+}
+.faq-item.open .faq-q { border-color: var(--gold); background: rgba(200,146,42,.04); }
+.faq-item.open .faq-q .arrow { transform: rotate(90deg); }
+.faq-a {
+  max-height: 0; overflow: hidden; transition: max-height .4s ease, padding .3s;
+  padding: 0 16px; color: var(--text2); font-size: .85rem; line-height: 1.8;
+}
+.faq-item.open .faq-a { max-height: 500px; padding: 12px 16px; }
+
+/* HowTo steps */
+.howto-step {
+  display: flex; gap: 16px; margin-bottom: 16px;
+  align-items: flex-start;
+}
+.step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--deep); border: 1px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold2); font-size: .85rem; flex-shrink: 0;
+  font-family: 'Cinzel', serif;
+}
+.step-content h4 {
+  color: var(--gold2); font-size: .9rem; margin-bottom: 4px;
+  font-family: 'Cinzel', serif; letter-spacing: .5px;
+}
+.step-content p { color: var(--text2); font-size: .85rem; }
+
+/* Help items */
+.help-item {
+  background: var(--deep); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; margin-bottom: 12px;
+}
+.help-item h4 {
+  color: var(--crimson2); font-size: .85rem; margin-bottom: 6px;
+}
+.help-item p {
+  color: var(--text2); font-size: .85rem;
+}
+.help-item .fix {
+  color: var(--teal); font-size: .8rem; margin-top: 6px;
+  padding-top: 6px; border-top: 1px solid var(--border);
+}
+
+/* Code */
+code {
+  background: var(--deep); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 4px; font-size: .82rem;
+  color: var(--gold2);
+}
+pre {
+  background: var(--deep); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; overflow-x: auto;
+  margin: 12px 0; font-size: .8rem; color: var(--text2);
+  line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; color: inherit; }
+
+/* Tables */
+table {
+  width: 100%; border-collapse: collapse; margin: 12px 0;
+  font-size: .82rem;
+}
+th {
+  text-align: left; padding: 8px 12px;
+  background: var(--deep); border: 1px solid var(--border);
+  color: var(--gold2); font-family: 'Cinzel', serif;
+  font-size: .7rem; letter-spacing: 1px; text-transform: uppercase;
+}
+td {
+  padding: 8px 12px; border: 1px solid var(--border);
+  color: var(--text2);
+}
+td.ar { font-family: 'Amiri', serif; direction: rtl; color: var(--text); }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 12px;
+  font-size: .65rem; border: 1px solid; margin-right: 4px;
+}
+.b-gold { color: var(--gold2); border-color: var(--gold); background: rgba(200,146,42,.08); }
+.b-teal { color: var(--teal); border-color: var(--teal); background: rgba(26,159,136,.08); }
+.b-crimson { color: var(--crimson2); border-color: var(--crimson2); background: rgba(192,57,43,.08); }
+
+/* Back to app link */
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--gold2); text-decoration: none;
+  font-size: .85rem; padding: 8px 16px;
+  border: 1px solid var(--gold); border-radius: 6px;
+  transition: all .3s; margin-top: 8px;
+}
+.back-link:hover { background: var(--gold); color: var(--void); }
+
+/* Footer */
+.footer {
+  text-align: center; padding: 30px 0 10px;
+  color: var(--text2); font-size: .75rem;
+}
+.footer .ar { font-family: 'Amiri', serif; font-size: 1rem; color: var(--gold2); direction: rtl; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .title { font-size: 2rem; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .page { padding: 30px 16px 60px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="mosaic-top"></div>
+<div class="mosaic-bottom"></div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+    <div class="title">المقلوب</div>
+    <div class="subtitle">Arabic Reversible Poetry</div>
+    <div class="header-label">Help · FAQ · How To</div>
+  </div>
+
+  <a href="almaqlub.html" class="back-link">← Open the App</a>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#overview"><span class="num">01</span> Overview</a>
+    <a href="#features"><span class="num">02</span> Features</a>
+    <a href="#howto"><span class="num">03</span> How To Use</a>
+    <a href="#faq"><span class="num">04</span> Frequently Asked Questions</a>
+    <a href="#help"><span class="num">05</span> Help & Troubleshooting</a>
+    <a href="#technical"><span class="num">06</span> Technical Reference</a>
+    <a href="#files"><span class="num">07</span> Project Files</a>
+    <a href="#compat"><span class="num">08</span> Browser Compatibility</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       01 OVERVIEW
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="overview"><span class="emoji">📜</span> Overview</h2>
+
+  <div class="card">
+    <p>Al-Maqlub (المقلوب, "The Reversed") is a single-file browser application dedicated to the ancient Arabic art of palindrome poetry. It brings together four experiences: a curated museum of classical palindromes, a real-time composition studio, an interactive puzzle game, and a dual-direction reciter.</p>
+    <br>
+    <p>Arabic palindrome poetry is one of the most technically demanding forms in the Arabic literary tradition. Known as المقلوب الحرفي (letter reversal), السرطاني (the crab poem), and other names, these compositions read identically — or produce new meaning — when reversed.</p>
+    <br>
+    <p>Al-Maqlub is part of the <strong style="color:var(--gold2);">كلامي (Kalami)</strong> Arabic tools family, sharing the same design language: dark void background, gold accents, Amiri font, Islamic geometric patterns, and Bismillah header.</p>
+  </div>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       02 FEATURES
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="features"><span class="emoji">✦</span> Features</h2>
+
+  <div class="feature-grid">
+    <div class="card feature-card">
+      <h3>📖 المكتبة · Library</h3>
+      <p>A curated museum of 10 verified classical Arabic palindromes.</p>
+      <ul>
+        <li>Decorated cards with Amiri calligraphic text</li>
+        <li>Type badges for each palindrome category</li>
+        <li>English & French translations</li>
+        <li>Century and source attribution</li>
+        <li>Symmetry axis animation (gold/crimson pairs)</li>
+        <li>Forward/backward text toggle</li>
+        <li>Text-to-speech (ar-SA)</li>
+      </ul>
+    </div>
+    <div class="card feature-card">
+      <h3>✍️ المحرر · Creator</h3>
+      <p>Compose and analyze your own Arabic palindromes in real time.</p>
+      <ul>
+        <li>Arabic text input area (RTL, Amiri font)</li>
+        <li>Full 28-letter Arabic virtual keyboard</li>
+        <li>Microphone dictation (Web Speech API)</li>
+        <li>Real-time letter & word palindrome checks</li>
+        <li>Symmetry score 0–100% with animated arc</li>
+        <li>Color-coded letter map (gold/crimson)</li>
+        <li>Fix suggestions panel</li>
+        <li>Save to session · Export SVG card</li>
+      </ul>
+    </div>
+    <div class="card feature-card">
+      <h3>🎮 اللعبة · Game</h3>
+      <p>Test your mirror skills with fill-in-the-blank palindrome puzzles.</p>
+      <ul>
+        <li>3 difficulty levels: حروف · كلمات · بيت</li>
+        <li>Puzzles drawn from the Library</li>
+        <li>Arabic keyboard input</li>
+        <li>Gold glow + particle burst on correct answers</li>
+        <li>Score counter + streak badge</li>
+        <li>Optional 30-second timer mode</li>
+      </ul>
+    </div>
+    <div class="card feature-card">
+      <h3>🔊 المنشد · Reciter</h3>
+      <p>Hear palindromes read forward and backward with synchronized highlights.</p>
+      <ul>
+        <li>Library selection or custom text input</li>
+        <li>Forward / Backward / Dual playback modes</li>
+        <li>Speed slider 0.5× to 2×</li>
+        <li>Animated waveform bars</li>
+        <li>Letter-by-letter highlight sync</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="color:var(--text2);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:1px;margin:16px 0 8px;">PALINDROME TYPES IN THE LIBRARY</h3>
+  <table>
+    <tr><th>Type</th><th>Arabic</th><th>Description</th></tr>
+    <tr><td><span class="badge b-gold">letter</span></td><td class="ar">المقلوب الحرفي</td><td>Same letter sequence forwards and backwards</td></tr>
+    <tr><td><span class="badge b-teal">word</span></td><td class="ar">السرطاني</td><td>Word order reverses to produce valid text</td></tr>
+    <tr><td><span class="badge b-crimson">sentence</span></td><td class="ar">المستوي</td><td>Full sentence reads same in both directions</td></tr>
+    <tr><td><span class="badge b-gold">half</span></td><td class="ar">شطر مقلوب</td><td>One hemistich mirrors the other</td></tr>
+  </table>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       03 HOW TO
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="howto"><span class="emoji">🗺️</span> How To Use</h2>
+
+  <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin:16px 0 12px;">GETTING STARTED</h3>
+  <div class="howto-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>Download</h4>
+      <p>Get <code>almaqlub.html</code> (or the full zip). That's the only file you need.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h4>Open in Browser</h4>
+      <p>Double-click the file to open it in Chrome or Edge. No server needed, no installation, no build step.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h4>Navigate</h4>
+      <p>Click any of the four tabs — المكتبة (Library), المحرر (Creator), اللعبة (Game), المنشد (Reciter) — to switch sections.</p>
+    </div>
+  </div>
+
+  <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin:24px 0 12px;">USING THE LIBRARY</h3>
+  <div class="howto-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>Browse</h4>
+      <p>Scroll through the decorated poem cards. Each shows the Arabic text, type badge, translations, and source.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h4>Analyze</h4>
+      <p>Click <strong>تحليل</strong> to trigger the symmetry animation — matching mirror pairs light up gold from center outward, mismatches glow crimson.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h4>Reverse</h4>
+      <p>Click <strong>عكس</strong> to flip the text backwards and see the palindrome property in action.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h4>Listen</h4>
+      <p>Click <strong>استمع</strong> to hear the poem read aloud in Arabic.</p>
+    </div>
+  </div>
+
+  <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin:24px 0 12px;">COMPOSING PALINDROMES</h3>
+  <div class="howto-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>Type or Dictate</h4>
+      <p>Use your system keyboard, the on-screen Arabic keyboard, or click <strong>تسجيل</strong> to dictate via microphone.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h4>Watch the Analysis</h4>
+      <p>The panel updates in real time: letter/word palindrome checks, symmetry score arc, and the color-coded letter map.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h4>Fix Mismatches</h4>
+      <p>Crimson letters in the map show mismatched mirror positions. The suggestions panel tells you exactly which positions need correction.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h4>Save or Export</h4>
+      <p>Click <strong>حفظ</strong> to save to your session collection, or <strong>تصدير SVG</strong> to download a decorative card image.</p>
+    </div>
+  </div>
+
+  <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin:24px 0 12px;">PLAYING THE GAME</h3>
+  <div class="howto-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>Choose Difficulty</h4>
+      <p><strong>حروف</strong> (fill 1–3 letters), <strong>كلمات</strong> (fill missing words), or <strong>بيت</strong> (reconstruct the mirror half).</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h4>Solve the Puzzle</h4>
+      <p>Read the poem with blanks, type your answer, and click <strong>تحقق</strong> to check. Gold glow = correct, crimson shake = wrong.</p>
+    </div>
+  </div>
+  <div class="howto-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h4>Build Your Streak</h4>
+      <p>Keep answering correctly to increase your streak. Enable the ⏱ timer for extra challenge.</p>
+    </div>
+  </div>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       04 FAQ
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="faq"><span class="emoji">❓</span> Frequently Asked Questions</h2>
+
+  <h3 style="color:var(--text2);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:1px;margin:12px 0 8px;">GENERAL</h3>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Do I need an internet connection?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Only for loading Google Fonts (Amiri, Cinzel, DM Mono) and for text-to-speech. The core palindrome logic, keyboard, game, and analysis all work offline. If fonts fail to load, the browser uses fallback serif/monospace fonts.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Which browser should I use?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Chrome or Edge for the full experience (speech recognition + synthesis). Firefox supports TTS but not mic input. Safari has partial support.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Can I use this on mobile?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Yes. The layout is fully responsive. The on-screen Arabic keyboard works with touch. Speech features depend on mobile browser support.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Is data saved between sessions?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Saved compositions use session storage, which persists within a single browser tab session. Closing the tab clears saved items. Game scores also reset on page reload.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Can I add my own poems to the Library?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Not through the UI. You can edit the <code>POEMS</code> array in the source code. Each entry needs <code>text</code>, <code>type</code>, <code>typeName</code>, <code>en</code>, <code>fr</code>, <code>source</code>, and <code>century</code> fields.</div>
+  </div>
+
+  <h3 style="color:var(--text2);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:1px;margin:16px 0 8px;">LIBRARY</h3>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Are all the palindromes verified?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Yes. Every poem has been tested against <code>stripForCompare</code> + <code>isLetterPalindrome</code> / <code>isWordPalindrome</code>. Stripping removes tashkeel, tatweel, spaces, punctuation, and normalizes alef/hamza variants.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> What does the symmetry animation show?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">It reveals mirror structure. Starting from the center, each pair of letters at positions (i) and (length−1−i) illuminates simultaneously. Gold = match, crimson = mismatch. A vertical gold line marks the axis.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> What is the difference between letter and word palindromes?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">A <em>letter palindrome</em> reads the same character-by-character when reversed (after stripping diacritics). A <em>word palindrome</em> has the same sequence of words when word order is reversed — e.g. "وَدِّعْ سُعَاد وَدِّعْ" reads the same words backwards.</div>
+  </div>
+
+  <h3 style="color:var(--text2);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:1px;margin:16px 0 8px;">CREATOR</h3>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> What exactly gets stripped for comparison?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Tashkeel (Unicode 0610–061A, 064B–065F, 0670, 06D6–06DC), tatweel (0640), whitespace, punctuation (،؟!,.?), alef variants (إأآ → ا), and hamza carriers (ؤئ → ء). Original text with diacritics is preserved for display.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> What does "95% symmetry" mean?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">The symmetry score counts matching mirror-position letter pairs divided by total pairs. 95% means most pairs match but a few differ. Check crimson letters in the letter map to see which positions to adjust.</div>
+  </div>
+
+  <h3 style="color:var(--text2);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:1px;margin:16px 0 8px;">GAME</h3>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> How is scoring calculated?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Letters: 10 points. Words: 25 points. Full verse: 50 points. Streak tracks consecutive correct answers and resets on any wrong answer. Timer mode does not affect scoring — if time runs out, the streak resets but no points are deducted.</div>
+  </div>
+
+  <h3 style="color:var(--text2);font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:1px;margin:16px 0 8px;">RECITER</h3>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> Can I recite my own text?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Yes. Paste any Arabic text into the custom text area. It does not need to be a palindrome — the reciter plays any text forward and backward.</div>
+  </div>
+
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q"><span class="q-text"><strong>Q:</strong> What happens in dual mode?</span><span class="arrow">▶</span></div>
+    <div class="faq-a">Forward pass with gold highlights, 500ms pause, then backward pass with crimson highlights. This audibly demonstrates the palindrome property.</div>
+  </div>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       05 HELP
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="help"><span class="emoji">🔧</span> Help & Troubleshooting</h2>
+
+  <div class="help-item">
+    <h4>No sound when clicking Listen / Play</h4>
+    <p>Check browser volume is not muted. Try Chrome or Edge for best Arabic TTS support.</p>
+    <div class="fix">Fix: Click anywhere on the page first (browser autoplay policy). Verify Arabic voices with <code>speechSynthesis.getVoices()</code> in the console.</div>
+  </div>
+
+  <div class="help-item">
+    <h4>Microphone not working</h4>
+    <p>Speech recognition requires Chrome or Edge. Firefox and Safari do not support the Web Speech Recognition API.</p>
+    <div class="fix">Fix: Grant mic permission when prompted. HTTPS is required on deployed sites; local files usually work.</div>
+  </div>
+
+  <div class="help-item">
+    <h4>Arabic keyboard keys look wrong</h4>
+    <p>The keys still function even with fallback fonts. The visual issue is from Google Fonts failing to load.</p>
+    <div class="fix">Fix: Hard-refresh with Ctrl+Shift+R. Check network connectivity for fonts.googleapis.com.</div>
+  </div>
+
+  <div class="help-item">
+    <h4>Game shows no puzzle</h4>
+    <p>The first puzzle generates automatically when you switch to the Game tab.</p>
+    <div class="fix">Fix: Click "التالي" (Next) to generate a new puzzle manually.</div>
+  </div>
+
+  <div class="help-item">
+    <h4>SVG export looks different from the app</h4>
+    <p>The SVG export is a simplified card format without animations or the letter map.</p>
+    <div class="fix">Fix: This is by design. The SVG is a portable, static snapshot meant for sharing.</div>
+  </div>
+
+  <div class="help-item">
+    <h4>Performance issues on mobile</h4>
+    <p>The geometric canvas background animates continuously, which may lag on older devices.</p>
+    <div class="fix">Fix: The animation is purely decorative (12% opacity). To disable: add <code>#geoCanvas { display:none }</code> in dev tools.</div>
+  </div>
+
+  <div class="help-item">
+    <h4>Text direction looks wrong</h4>
+    <p>The app sets <code>dir="rtl"</code> globally. If text appears LTR, check browser isn't overriding direction.</p>
+    <div class="fix">Fix: All input fields are explicitly RTL. Ensure no browser extension is interfering.</div>
+  </div>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       06 TECHNICAL
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="technical"><span class="emoji">⚙️</span> Technical Reference</h2>
+
+  <div class="card">
+    <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin-bottom:10px;">ARCHITECTURE</h3>
+    <p>Single HTML file (~65KB) containing all CSS, HTML, and JavaScript inline. No modules, no bundler, no framework. CSS custom properties define the design system. One responsive breakpoint at 600px. Four <code>&lt;section&gt;</code> elements toggled by navigation. <code>&lt;canvas&gt;</code> for geometric background.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin-bottom:10px;">CORE FUNCTIONS</h3>
+    <pre><code>// Strip diacritics, tatweel, spaces, punctuation, normalize alef/hamza
+function stripForCompare(str) {
+  return str
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC]/g, '')
+    .replace(/[\u0640]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/[،؟!,.?]/g, '')
+    .replace(/[إأآا]/g, 'ا')
+    .replace(/[ؤئ]/g, 'ء')
+    .trim();
+}
+
+// Letter-by-letter palindrome check
+function isLetterPalindrome(str) {
+  const s = stripForCompare(str);
+  return s === s.split('').reverse().join('');
+}
+
+// Word-by-word palindrome check
+function isWordPalindrome(str) {
+  const stripped = str.trim().split(/\s+/).map(w => stripForCompare(w));
+  const rev = [...stripped].reverse();
+  return stripped.join(' ') === rev.join(' ');
+}</code></pre>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--gold2);font-family:'Cinzel',serif;font-size:.85rem;margin-bottom:10px;">CSS CUSTOM PROPERTIES</h3>
+    <pre><code>--void:    #030508     /* deepest background */
+--deep:    #07101e     /* component backgrounds */
+--surface: #0c1828     /* card backgrounds */
+--gold:    #c8922a     /* primary accent */
+--gold2:   #e8b84b     /* highlight accent */
+--gold3:   #f5d98a     /* light accent */
+--crimson: #8b2020     /* error/mismatch dark */
+--crimson2:#c0392b     /* error/mismatch bright */
+--teal:    #1a9f88     /* success/correct */
+--text:    #e8dcc8     /* primary text */
+--text2:   #9a8870     /* secondary text */
+--border:  rgba(200,146,42,.18)</code></pre>
+  </div>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       07 FILES
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="files"><span class="emoji">📁</span> Project Files</h2>
+
+  <table>
+    <tr><th>File</th><th>Description</th><th>Size</th></tr>
+    <tr><td><code>almaqlub.html</code></td><td>Full application — all 4 sections</td><td>~65KB</td></tr>
+    <tr><td><code>almaqlub-tests.html</code></td><td>Automated test suite — 40+ tests, iframe-based</td><td>~26KB</td></tr>
+    <tr><td><code>README.md</code></td><td>Project documentation (Markdown)</td><td>~12KB</td></tr>
+    <tr><td><code>README.html</code></td><td>Interactive help page (this file)</td><td>~24KB</td></tr>
+    <tr><td><code>CHANGELOG.md</code></td><td>Version history</td><td>~2KB</td></tr>
+  </table>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- ═══════════════════════════════════════════════
+       08 COMPATIBILITY
+       ═══════════════════════════════════════════════ -->
+  <h2 class="sec-header" id="compat"><span class="emoji">🌐</span> Browser Compatibility</h2>
+
+  <table>
+    <tr><th>Feature</th><th>Chrome</th><th>Edge</th><th>Firefox</th><th>Safari</th></tr>
+    <tr><td>Core app</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Arabic keyboard</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Palindrome analysis</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Game</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Text-to-speech</td><td>✓</td><td>✓</td><td>✓</td><td>Partial</td></tr>
+    <tr><td>Speech recognition</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Geometric canvas</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  </table>
+
+  <div class="divider"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="almaqlub.html" class="back-link">← Open the App</a>
+    <br><br>
+    <div class="ar">بارك الله فيك 🌙</div>
+    <br>
+    <span>المقلوب · Al-Maqlub v1.0.0 · Part of كلامي (Kalami) Arabic tools</span>
+  </div>
+
+</div>
+</body>
+</html>

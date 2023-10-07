@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المقلوب · Al-Maqlub — Test Suite</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Courier New', monospace; background:#0a0a0a; color:#ccc; padding:20px; }
+  h1 { color:#c8922a; margin-bottom:5px; }
+  .subtitle { color:#666; margin-bottom:20px; font-size:.85rem; }
+  .summary { padding:15px; border:1px solid #333; border-radius:8px; margin-bottom:20px; display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
+  .summary .total { font-size:1.3rem; color:#fff; }
+  .summary .pass { color:#1a9f88; }
+  .summary .fail { color:#c0392b; }
+  .summary .skip { color:#e8b84b; }
+  .progress-bar { width:100%; height:6px; background:#222; border-radius:3px; margin:10px 0; overflow:hidden; }
+  .progress-bar .fill { height:100%; transition: width .3s; border-radius:3px; }
+  .test-group { margin-bottom:15px; }
+  .group-header { color:#e8b84b; font-size:1rem; padding:8px 0 4px; border-bottom:1px solid #222; margin-bottom:4px; }
+  .test-row { display:flex; align-items:center; gap:8px; padding:4px 8px; font-size:.85rem; border-radius:4px; }
+  .test-row:hover { background:#111; }
+  .test-row .icon { width:20px; text-align:center; }
+  .test-row .name { flex:1; }
+  .test-row .time { color:#555; font-size:.75rem; min-width:50px; text-align:right; }
+  .test-row.pass .icon { color:#1a9f88; }
+  .test-row.fail .icon { color:#c0392b; }
+  .test-row.fail .name { color:#c0392b; }
+  .test-row.fail .detail { color:#c0392b; font-size:.75rem; padding:2px 0 2px 28px; }
+  #testFrame { width:1px; height:1px; border:none; position:absolute; top:-9999px; }
+  .run-btn { background:#c8922a; color:#000; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-family:inherit; font-size:.9rem; margin-bottom:15px; }
+  .run-btn:hover { background:#e8b84b; }
+  .run-btn:disabled { opacity:.5; cursor:not-allowed; }
+</style>
+</head>
+<body>
+
+<h1>المقلوب · Al-Maqlub — Test Suite</h1>
+<div class="subtitle">Automated tests for Arabic Palindrome Poetry App</div>
+
+<button class="run-btn" id="runBtn" onclick="runAllTests()">▶ Run All Tests</button>
+
+<div class="summary" id="summary" style="display:none;">
+  <span class="total" id="totalCount"></span>
+  <span class="pass" id="passCount"></span>
+  <span class="fail" id="failCount"></span>
+  <span class="skip" id="skipCount"></span>
+</div>
+<div class="progress-bar"><div class="fill" id="progressFill" style="width:0;background:#1a9f88;"></div></div>
+
+<div id="results"></div>
+
+<iframe id="testFrame" src="almaqlub.html"></iframe>
+
+<script>
+const results = [];
+let totalTests = 0;
+let passedTests = 0;
+let failedTests = 0;
+let skippedTests = 0;
+let appWindow = null;
+let appDoc = null;
+
+function log(group, name, passed, detail = '') {
+  totalTests++;
+  if (passed) passedTests++;
+  else failedTests++;
+  results.push({ group, name, passed, detail });
+}
+
+function assert(group, name, condition, detail = '') {
+  log(group, name, !!condition, detail);
+}
+
+function assertEqual(group, name, actual, expected) {
+  const pass = actual === expected;
+  log(group, name, pass, pass ? '' : `Expected: ${expected}, Got: ${actual}`);
+}
+
+function assertExists(group, name, el) {
+  log(group, name, !!el, el ? '' : 'Element not found');
+}
+
+function renderResults() {
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+  const groups = {};
+  results.forEach(r => {
+    if (!groups[r.group]) groups[r.group] = [];
+    groups[r.group].push(r);
+  });
+
+  Object.keys(groups).forEach(g => {
+    const div = document.createElement('div');
+    div.className = 'test-group';
+    const gCount = groups[g].length;
+    const gPass = groups[g].filter(r => r.passed).length;
+    div.innerHTML = `<div class="group-header">${g} (${gPass}/${gCount})</div>`;
+    groups[g].forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'test-row ' + (r.passed ? 'pass' : 'fail');
+      row.innerHTML = `<span class="icon">${r.passed ? '✓' : '✗'}</span><span class="name">${r.name}</span>`;
+      div.appendChild(row);
+      if (!r.passed && r.detail) {
+        const detail = document.createElement('div');
+        detail.className = 'detail';
+        detail.textContent = r.detail;
+        row.appendChild(detail);
+      }
+    });
+    container.appendChild(div);
+  });
+
+  document.getElementById('summary').style.display = 'flex';
+  document.getElementById('totalCount').textContent = `Total: ${totalTests}`;
+  document.getElementById('passCount').textContent = `✓ ${passedTests} passed`;
+  document.getElementById('failCount').textContent = `✗ ${failedTests} failed`;
+  const pct = totalTests > 0 ? (passedTests / totalTests * 100) : 0;
+  const fill = document.getElementById('progressFill');
+  fill.style.width = pct + '%';
+  fill.style.background = failedTests > 0 ? '#c0392b' : '#1a9f88';
+}
+
+function runAllTests() {
+  results.length = 0;
+  totalTests = 0; passedTests = 0; failedTests = 0; skippedTests = 0;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('results').innerHTML = '<div style="color:#666;padding:10px;">Loading app in iframe...</div>';
+
+  const frame = document.getElementById('testFrame');
+  frame.onload = () => {
+    try {
+      appWindow = frame.contentWindow;
+      appDoc = frame.contentDocument || frame.contentWindow.document;
+      setTimeout(() => {
+        try {
+          runCoreTests();
+          runUITests();
+          runLibraryTests();
+          runCreatorTests();
+          runGameTests();
+          runReciterTests();
+          runAccessibilityTests();
+          runEdgeCaseTests();
+        } catch(e) {
+          log('Runtime', 'Test execution error', false, e.message);
+        }
+        renderResults();
+        document.getElementById('runBtn').disabled = false;
+      }, 1500);
+    } catch(e) {
+      log('Setup', 'iframe access', false, e.message);
+      renderResults();
+      document.getElementById('runBtn').disabled = false;
+    }
+  };
+  frame.src = 'almaqlub.html';
+}
+
+/* ═══════════════════════════════════════════════
+   CORE FUNCTION TESTS
+   ═══════════════════════════════════════════════ */
+function runCoreTests() {
+  const G = '1. Core Functions';
+
+  // stripForCompare
+  const strip = appWindow.stripForCompare;
+  assert(G, 'stripForCompare exists', typeof strip === 'function');
+
+  assertEqual(G, 'strip removes tashkeel',
+    strip('رَبَّكَ فَكَبِّرْ'),
+    'ربكفكبر'
+  );
+
+  assertEqual(G, 'strip removes spaces',
+    strip('ب ت ث'),
+    'بتث'
+  );
+
+  assertEqual(G, 'strip removes punctuation',
+    strip('مرحبا، كيف؟'),
+    'مرحباكيف'
+  );
+
+  assertEqual(G, 'strip removes tatweel',
+    strip('عـربـي'),
+    'عربي'
+  );
+
+  assertEqual(G, 'strip handles empty string',
+    strip(''),
+    ''
+  );
+
+  assert(G, 'strip normalizes alef variants',
+    strip('إأآا') === 'اااا'
+  );
+
+  // isLetterPalindrome
+  const isLP = appWindow.isLetterPalindrome;
+  assert(G, 'isLetterPalindrome exists', typeof isLP === 'function');
+
+  assert(G, 'رَبَّكَ فَكَبِّرْ is letter palindrome',
+    isLP('رَبَّكَ فَكَبِّرْ')
+  );
+
+  assert(G, 'كُلّ فِي فُلْك is letter palindrome',
+    isLP('كُلّ فِي فُلْك')
+  );
+
+  assert(G, 'رَامَ نَوْمًا مَوْنَ مَارَ is letter palindrome',
+    isLP('رَامَ نَوْمًا مَوْنَ مَارَ')
+  );
+
+  assert(G, 'دَامَ عُلا العِمَاد is letter palindrome',
+    isLP('دَامَ عُلا العِمَاد')
+  );
+
+  assert(G, 'كَبْشٌ شَبَك is letter palindrome',
+    isLP('كَبْشٌ شَبَك')
+  );
+
+  assert(G, 'أَرْضٌ خَضْرَا is letter palindrome',
+    isLP('أَرْضٌ خَضْرَا')
+  );
+
+  assert(G, 'لَيْل is letter palindrome',
+    isLP('لَيْل')
+  );
+
+  assert(G, 'random text is NOT letter palindrome',
+    !isLP('هذا ليس متناظرا')
+  );
+
+  // isWordPalindrome
+  const isWP = appWindow.isWordPalindrome;
+  assert(G, 'isWordPalindrome exists', typeof isWP === 'function');
+
+  assert(G, 'وَدِّعْ سُعَاد وَدِّعْ is word palindrome',
+    isWP('وَدِّعْ سُعَاد وَدِّعْ')
+  );
+
+  assert(G, 'دَاوَ دَاءَ دَاءَ دَاوَ is word palindrome',
+    isWP('دَاوَ دَاءَ دَاءَ دَاوَ')
+  );
+
+  assert(G, 'لَيْلِي يُطِيلُ يُطِيلُ لَيْلِي is word palindrome',
+    isWP('لَيْلِي يُطِيلُ يُطِيلُ لَيْلِي')
+  );
+
+  assert(G, 'random sentence is NOT word palindrome',
+    !isWP('الشمس تشرق صباحا')
+  );
+
+  // symmetryScore
+  const symScore = appWindow.symmetryScore;
+  assert(G, 'symmetryScore exists', typeof symScore === 'function');
+
+  assertEqual(G, 'perfect palindrome = 100%',
+    symScore('رَبَّكَ فَكَبِّرْ'), 100
+  );
+
+  assertEqual(G, 'empty string = 0%', symScore(''), 0);
+
+  assert(G, 'non-palindrome < 100%', symScore('هذا ليس متناظرا') < 100);
+}
+
+/* ═══════════════════════════════════════════════
+   UI STRUCTURE TESTS
+   ═══════════════════════════════════════════════ */
+function runUITests() {
+  const G = '2. UI Structure';
+
+  // Basic page structure
+  assertExists(G, 'geoCanvas background exists', appDoc.getElementById('geoCanvas'));
+  assertExists(G, 'mosaic border top exists', appDoc.querySelector('.mosaic-border-top'));
+  assertExists(G, 'mosaic border bottom exists', appDoc.querySelector('.mosaic-border-bottom'));
+  assertExists(G, 'Bismillah header exists', appDoc.querySelector('.bismillah'));
+
+  // Check Bismillah content
+  const bismillah = appDoc.querySelector('.bismillah');
+  assert(G, 'Bismillah has correct text',
+    bismillah && bismillah.textContent.includes('بِسْمِ اللَّهِ')
+  );
+
+  assertExists(G, 'App title exists', appDoc.querySelector('.app-title'));
+  assert(G, 'App title is المقلوب',
+    appDoc.querySelector('.app-title')?.textContent.includes('المقلوب')
+  );
+
+  // Navigation
+  const navBtns = appDoc.querySelectorAll('.nav-btn');
+  assertEqual(G, '4 navigation buttons', navBtns.length, 4);
+
+  assert(G, 'Library nav has data-section',
+    navBtns[0]?.dataset.section === 'library'
+  );
+
+  // Sections exist
+  assertExists(G, 'Library section exists', appDoc.getElementById('sec-library'));
+  assertExists(G, 'Creator section exists', appDoc.getElementById('sec-creator'));
+  assertExists(G, 'Game section exists', appDoc.getElementById('sec-game'));
+  assertExists(G, 'Reciter section exists', appDoc.getElementById('sec-reciter'));
+
+  // Only library is active by default
+  assert(G, 'Library section is active by default',
+    appDoc.getElementById('sec-library')?.classList.contains('active')
+  );
+  assert(G, 'Creator section is hidden by default',
+    !appDoc.getElementById('sec-creator')?.classList.contains('active')
+  );
+
+  // RTL
+  assert(G, 'HTML dir is rtl',
+    appDoc.documentElement.getAttribute('dir') === 'rtl'
+  );
+  assert(G, 'HTML lang is ar',
+    appDoc.documentElement.getAttribute('lang') === 'ar'
+  );
+
+  // Fonts loaded (check link tag)
+  const fontLink = appDoc.querySelector('link[href*="fonts.googleapis"]');
+  assertExists(G, 'Google Fonts link exists', fontLink);
+  assert(G, 'Amiri font loaded', fontLink?.href.includes('Amiri'));
+  assert(G, 'Cinzel font loaded', fontLink?.href.includes('Cinzel'));
+  assert(G, 'DM Mono font loaded', fontLink?.href.includes('DM+Mono'));
+}
+
+/* ═══════════════════════════════════════════════
+   LIBRARY TESTS
+   ═══════════════════════════════════════════════ */
+function runLibraryTests() {
+  const G = '3. Library';
+
+  // POEMS data
+  const poems = appWindow.POEMS;
+  assert(G, 'POEMS array exists', Array.isArray(poems));
+  assert(G, 'At least 10 poems', poems?.length >= 10);
+
+  // Each poem has required fields
+  const requiredFields = ['text', 'type', 'typeName', 'en', 'fr', 'source', 'century'];
+  if (poems && poems.length > 0) {
+    requiredFields.forEach(field => {
+      assert(G, `First poem has "${field}" field`, poems[0].hasOwnProperty(field));
+    });
+  }
+
+  // Types coverage
+  const types = poems ? [...new Set(poems.map(p => p.type))] : [];
+  assert(G, 'Has letter type poems', types.includes('letter'));
+  assert(G, 'Has word type poems', types.includes('word'));
+  assert(G, 'Has sentence type poems', types.includes('sentence'));
+  assert(G, 'Has half type poems', types.includes('half'));
+
+  // Library cards rendered
+  const cards = appDoc.querySelectorAll('#libraryCards .card');
+  assert(G, 'Library cards rendered', cards.length >= 10);
+
+  // Card structure
+  if (cards.length > 0) {
+    const firstCard = cards[0];
+    assertExists(G, 'Card has badge', firstCard.querySelector('.badge'));
+    assertExists(G, 'Card has poem-text', firstCard.querySelector('.poem-text'));
+    assertExists(G, 'Card has translation', firstCard.querySelector('.poem-translation'));
+    assertExists(G, 'Card has source', firstCard.querySelector('.poem-source'));
+    assertExists(G, 'Card has actions', firstCard.querySelector('.poem-actions'));
+    assertExists(G, 'Card has symmetry line', firstCard.querySelector('.symmetry-line'));
+
+    // Buttons
+    const btns = firstCard.querySelectorAll('.poem-actions .btn');
+    assert(G, 'Card has 3 action buttons', btns.length === 3);
+  }
+
+  // Verify specific poems exist
+  const poemTexts = poems ? poems.map(p => appWindow.stripForCompare(p.text)) : [];
+  assert(G, 'Contains رَبَّكَ فَكَبِّرْ poem',
+    poems?.some(p => p.text.includes('رَبَّكَ'))
+  );
+  assert(G, 'Contains دَاوَ poem',
+    poems?.some(p => p.text.includes('دَاوَ'))
+  );
+  assert(G, 'Contains وَدِّعْ سُعَاد poem',
+    poems?.some(p => p.text.includes('وَدِّعْ'))
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   CREATOR TESTS
+   ═══════════════════════════════════════════════ */
+function runCreatorTests() {
+  const G = '4. Creator';
+
+  // Input elements
+  assertExists(G, 'Creator input textarea exists', appDoc.getElementById('creatorInput'));
+  const input = appDoc.getElementById('creatorInput');
+  assert(G, 'Creator input is RTL', input?.getAttribute('dir') !== 'ltr');
+
+  // Keyboard
+  const kb = appDoc.getElementById('creatorKeyboard');
+  assertExists(G, 'Creator keyboard container exists', kb);
+  const keys = kb?.querySelectorAll('.kb-key');
+  assert(G, 'Keyboard has keys', keys?.length > 20);
+
+  // Check Arabic letters present
+  const keyTexts = Array.from(keys || []).map(k => k.textContent);
+  assert(G, 'Keyboard has ا', keyTexts.includes('ا'));
+  assert(G, 'Keyboard has ب', keyTexts.includes('ب'));
+  assert(G, 'Keyboard has space key', keyTexts.some(t => t.includes('مسافة')));
+  assert(G, 'Keyboard has backspace key', keyTexts.includes('⌫'));
+
+  // Analysis panel
+  assertExists(G, 'Letter palindrome result', appDoc.getElementById('aLetterResult'));
+  assertExists(G, 'Word palindrome result', appDoc.getElementById('aWordResult'));
+  assertExists(G, 'Symmetry score display', appDoc.getElementById('aSymmetry'));
+  assertExists(G, 'Arc SVG fill', appDoc.getElementById('arcFill'));
+  assertExists(G, 'Letter map container', appDoc.getElementById('letterMap'));
+  assertExists(G, 'Suggestions panel', appDoc.getElementById('suggestionsPanel'));
+
+  // Mic button
+  assertExists(G, 'Microphone button exists', appDoc.getElementById('micBtn'));
+
+  // Save / Export buttons
+  assertExists(G, 'Save button exists', appDoc.getElementById('saveBtn'));
+  assertExists(G, 'Export button exists', appDoc.getElementById('exportBtn'));
+
+  // Collection
+  assertExists(G, 'Collection list exists', appDoc.getElementById('collectionList'));
+
+  // Test analysis by simulating input
+  if (input) {
+    input.value = 'رَبَّكَ فَكَبِّرْ';
+    appWindow.analyzeCreator();
+    const lpResult = appDoc.getElementById('aLetterResult').textContent;
+    assert(G, 'Analysis detects letter palindrome', lpResult.includes('✓'));
+
+    const symText = appDoc.getElementById('aSymmetry').textContent;
+    assert(G, 'Symmetry shows 100%', symText.includes('100'));
+
+    const letterMap = appDoc.getElementById('letterMap');
+    assert(G, 'Letter map populated', letterMap.children.length > 0);
+
+    // Test non-palindrome
+    input.value = 'هذا نص عادي';
+    appWindow.analyzeCreator();
+    const lpResult2 = appDoc.getElementById('aLetterResult').textContent;
+    assert(G, 'Analysis detects non-palindrome', lpResult2.includes('✗'));
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   GAME TESTS
+   ═══════════════════════════════════════════════ */
+function runGameTests() {
+  const G = '5. Game';
+
+  // Difficulty buttons
+  const diffBtns = appDoc.querySelectorAll('.game-controls .btn[data-difficulty]');
+  assert(G, '3 difficulty buttons', diffBtns.length === 3);
+
+  // Timer toggle
+  assertExists(G, 'Timer toggle button', appDoc.getElementById('timerToggle'));
+  assertExists(G, 'Timer bar', appDoc.getElementById('timerBar'));
+
+  // Stats
+  assertExists(G, 'Score display', appDoc.getElementById('scoreVal'));
+  assertExists(G, 'Streak display', appDoc.getElementById('streakVal'));
+
+  // Puzzle display
+  assertExists(G, 'Puzzle display area', appDoc.getElementById('puzzleDisplay'));
+
+  // Game input
+  assertExists(G, 'Game text input', appDoc.getElementById('gameInput'));
+  const gameInput = appDoc.getElementById('gameInput');
+  assert(G, 'Game input is RTL', gameInput?.getAttribute('dir') === 'rtl');
+
+  // Game keyboard
+  const gkb = appDoc.getElementById('gameKeyboard');
+  assertExists(G, 'Game keyboard exists', gkb);
+
+  // Feedback area
+  assertExists(G, 'Game feedback area', appDoc.getElementById('gameFeedback'));
+
+  // Test game state
+  assert(G, 'gameScore initialized to 0', appWindow.gameScore === 0);
+  assert(G, 'gameStreak initialized to 0', appWindow.gameStreak === 0);
+
+  // Test setDifficulty function
+  assert(G, 'setDifficulty function exists', typeof appWindow.setDifficulty === 'function');
+  assert(G, 'nextPuzzle function exists', typeof appWindow.nextPuzzle === 'function');
+  assert(G, 'checkAnswer function exists', typeof appWindow.checkAnswer === 'function');
+
+  // Generate a puzzle
+  appWindow.nextPuzzle();
+  assert(G, 'currentPuzzle is set after nextPuzzle',
+    appWindow.currentPuzzle !== null
+  );
+  assert(G, 'currentPuzzle has type',
+    appWindow.currentPuzzle?.type !== undefined
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   RECITER TESTS
+   ═══════════════════════════════════════════════ */
+function runReciterTests() {
+  const G = '6. Reciter';
+
+  // Select
+  assertExists(G, 'Reciter select exists', appDoc.getElementById('reciterSelect'));
+  const opts = appDoc.querySelectorAll('#reciterSelect option');
+  assert(G, 'Reciter has poem options', opts.length > 1);
+
+  // Custom input
+  assertExists(G, 'Reciter custom textarea', appDoc.getElementById('reciterCustom'));
+
+  // Display
+  assertExists(G, 'Reciter display area', appDoc.getElementById('reciterDisplay'));
+
+  // Waveform
+  const wf = appDoc.getElementById('waveform');
+  assertExists(G, 'Waveform container exists', wf);
+  const bars = wf?.querySelectorAll('.wave-bar');
+  assert(G, 'Waveform has bars', bars?.length > 0);
+
+  // Speed slider
+  assertExists(G, 'Speed slider exists', appDoc.getElementById('speedSlider'));
+  const slider = appDoc.getElementById('speedSlider');
+  assert(G, 'Speed min is 0.5', slider?.min === '0.5');
+  assert(G, 'Speed max is 2', slider?.max === '2');
+
+  // Control buttons
+  assertExists(G, 'Play forward button', appDoc.getElementById('playFwdBtn'));
+  assertExists(G, 'Play dual button', appDoc.getElementById('playDualBtn'));
+  assertExists(G, 'Play backward button', appDoc.getElementById('playBwdBtn'));
+  assertExists(G, 'Stop button', appDoc.getElementById('stopReciterBtn'));
+
+  // Functions
+  assert(G, 'playReciter function exists', typeof appWindow.playReciter === 'function');
+  assert(G, 'stopReciter function exists', typeof appWindow.stopReciter === 'function');
+  assert(G, 'speakText function exists', typeof appWindow.speakText === 'function');
+  assert(G, 'renderReciterLetters function exists', typeof appWindow.renderReciterLetters === 'function');
+
+  // Test rendering
+  appWindow.renderReciterLetters('اختبار');
+  const rLetters = appDoc.querySelectorAll('#reciterDisplay .r-letter');
+  assert(G, 'Reciter renders letters correctly', rLetters.length === 6); // اختبار = 6 chars
+}
+
+/* ═══════════════════════════════════════════════
+   ACCESSIBILITY TESTS
+   ═══════════════════════════════════════════════ */
+function runAccessibilityTests() {
+  const G = '7. Accessibility & Design';
+
+  // CSS variables present
+  const style = appWindow.getComputedStyle(appDoc.body);
+  const root = appDoc.documentElement;
+  const rootStyle = appWindow.getComputedStyle(root);
+
+  // Check that CSS vars are defined
+  assert(G, '--void CSS variable defined',
+    rootStyle.getPropertyValue('--void').trim() !== ''
+  );
+  assert(G, '--gold CSS variable defined',
+    rootStyle.getPropertyValue('--gold').trim() !== ''
+  );
+
+  // Check body background is dark
+  assert(G, 'Body background is dark',
+    style.backgroundColor !== 'rgb(255, 255, 255)' && style.backgroundColor !== 'rgba(0, 0, 0, 0)'
+  );
+
+  // Particle container
+  assertExists(G, 'Particle container exists', appDoc.getElementById('particleContainer'));
+
+  // spawnParticles function
+  assert(G, 'spawnParticles function exists', typeof appWindow.spawnParticles === 'function');
+
+  // All Arabic text uses Amiri font (check creator input)
+  const creatorInput = appDoc.getElementById('creatorInput');
+  if (creatorInput) {
+    const ciStyle = appWindow.getComputedStyle(creatorInput);
+    assert(G, 'Creator input uses Amiri font',
+      ciStyle.fontFamily.includes('Amiri')
+    );
+  }
+
+  // Section headers use proper fonts
+  const secHeader = appDoc.querySelector('.section-header h2');
+  if (secHeader) {
+    const shStyle = appWindow.getComputedStyle(secHeader);
+    assert(G, 'Section header uses Amiri font',
+      shStyle.fontFamily.includes('Amiri')
+    );
+  }
+
+  // Badges use DM Mono
+  const badge = appDoc.querySelector('.badge');
+  if (badge) {
+    const bStyle = appWindow.getComputedStyle(badge);
+    assert(G, 'Badge uses DM Mono font',
+      bStyle.fontFamily.includes('DM Mono')
+    );
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   EDGE CASE TESTS
+   ═══════════════════════════════════════════════ */
+function runEdgeCaseTests() {
+  const G = '8. Edge Cases';
+
+  const strip = appWindow.stripForCompare;
+  const isLP = appWindow.isLetterPalindrome;
+  const isWP = appWindow.isWordPalindrome;
+  const sym = appWindow.symmetryScore;
+
+  // Single character
+  assert(G, 'Single char is palindrome', isLP('ا'));
+  assertEqual(G, 'Single char symmetry = 100', sym('ا'), 100);
+
+  // Two identical chars
+  assert(G, 'Two identical chars palindrome', isLP('اا'));
+
+  // Two different chars
+  assert(G, 'Two different chars not palindrome', !isLP('اب'));
+
+  // Only spaces
+  assertEqual(G, 'Only spaces strips to empty', strip('   '), '');
+
+  // Only tashkeel
+  assertEqual(G, 'Only tashkeel strips to empty', strip('\u064B\u064C\u064D'), '');
+
+  // Mixed content
+  assert(G, 'strip handles complex mixed content',
+    strip('  أَبْ،ـتَ  ') === 'ابت'
+  );
+
+  // Very long text
+  const longText = 'ا'.repeat(1000);
+  assert(G, 'Long palindrome detected', isLP(longText));
+  assertEqual(G, 'Long palindrome = 100%', sym(longText), 100);
+
+  // Word palindrome with single word
+  assert(G, 'Single word is word palindrome', isWP('كلمة'));
+
+  // Odd-length palindrome
+  assert(G, 'Odd length palindrome check',
+    isLP('أبا') // aba
+  );
+
+  // Navigation switching
+  const navBtns = appDoc.querySelectorAll('.nav-btn');
+  if (navBtns.length >= 2) {
+    navBtns[1].click(); // Switch to Creator
+    assert(G, 'Navigation switches to creator',
+      appDoc.getElementById('sec-creator')?.classList.contains('active')
+    );
+    navBtns[0].click(); // Switch back
+    assert(G, 'Navigation switches back to library',
+      appDoc.getElementById('sec-library')?.classList.contains('active')
+    );
+  }
+
+  // Keyboard action
+  assert(G, 'kbAction function exists', typeof appWindow.kbAction === 'function');
+
+  // Save and collection
+  assert(G, 'saveToCollection function exists', typeof appWindow.saveToCollection === 'function');
+  assert(G, 'exportSVG function exists', typeof appWindow.exportSVG === 'function');
+  assert(G, 'collection is array', Array.isArray(appWindow.collection));
+}
+</script>
+</body>
+</html>
